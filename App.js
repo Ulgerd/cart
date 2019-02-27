@@ -1,10 +1,24 @@
 import React, { Component } from 'react';
+import PropTypes from 'prop-types';
 
 const products = { 'Apple': {name: 'Apple', price: 10, stock: 12},
                    'Melon': {name: 'Melon', price: 20, stock:  5},
                   'Orange': {name:'Orange', price:  8, stock: 20} }
 
 
+function deepMerge(o1, o2) {
+  var o = {};
+  for (var i = 0; i < arguments.length; i++) {
+    for (var k in arguments[i]) {
+      if (typeof arguments[i] !== "undefined") {
+        o[k] = (typeof arguments[i][k] == 'object') ?
+        deepMerge(o[k], arguments[i][k]) :
+        arguments[i][k];
+      }
+    }
+  }
+  return o;
+}
 
 class Cart extends Component {
   constructor(props) {
@@ -15,11 +29,11 @@ class Cart extends Component {
  }
 
   onIncrease() {
-    this.props.onProductBuy(this.props.name, this.props.price, this.props.bought+1, this.props.stock)
+    this.props.onProductBuy(this.props.name, this.props.bought+1)
   }
 
    onDecrease() {
-    this.props.onProductBuy(this.props.name, this.props.price, this.props.bought-1, this.props.stock)
+    this.props.onProductBuy(this.props.name, this.props.bought-1)
   }
 
   render() {
@@ -35,13 +49,21 @@ class Cart extends Component {
     return (
       <div key={this.props.name.toString()}>
         <span style={(this.props.bought === 0) ? {textDecoration:"line-through"}:{textDecoration:"none"}}>{this.props.name} – ${this.props.price} × {this.props.bought}</span>
-        {(this.props.bought === this.props.stock) ?  <button disabled>+1</button> : <button onClick={this.onIncrease}>+1</button>}
-        {(this.props.bought === 0) ?  <button disabled>-1</button> : <button onClick={this.onDecrease}>-1</button>}
+        {<button onClick={this.onIncrease} disabled = {(this.props.bought === this.props.stock)}>+1</button>}
+        {<button onClick={this.onDecrease} disabled = {(this.props.bought === 0)}>-1</button>}
         ({this.props.stock-this.props.bought} in stock)
       </div>
     )
   }
 }
+
+Cart.propTypes = {
+  name: PropTypes.string.isRequired,
+  price: PropTypes.number.isRequired,
+  stock: PropTypes.number.isRequired,
+}
+
+
 
 class Inventory extends Component {
   constructor(props) {
@@ -51,15 +73,15 @@ class Inventory extends Component {
 
   onBuy(e) {
     if (this.props.bought !== this.props.stock) {
-      this.props.onProductBuy(this.props.name, this.props.price, this.props.bought+1, this.props.stock)
+      this.props.onProductBuy(this.props.name, this.props.bought+1)
     }
   }
 
   render() {
-    let button = (this.props.bought === this.props.stock) ? <button disabled>Buy</button> : <button onClick={this.onBuy}>Buy</button>
+    let button = <button onClick={this.onBuy} disabled = {(this.props.bought === this.props.stock)}>Buy</button>
 
     return (
-      <div key={this.props.name.toString()}>
+      <div>
         {this.props.name} – ${this.props.price}
         {button}
         ({this.props.bought} selected, {this.props.stock - this.props.bought} in stock)
@@ -67,6 +89,18 @@ class Inventory extends Component {
     )
   }
 }
+
+Inventory.propTypes = {
+   name: PropTypes.string.isRequired,
+   price: PropTypes.number.isRequired,
+   stock: PropTypes.number.isRequired,
+}
+
+Inventory.defaultProps ={
+  price: 100,
+  stock: 0
+}
+
 
 
 class Final extends Component {
@@ -78,9 +112,8 @@ class Final extends Component {
     this.state = products;
   }
 
-  stockChange(name, price, bought, stock) {
-    this.setState(prevState => ({
-      ...prevState, [name]:{name: name, price: price, stock:stock, bought: bought}}
+  stockChange(name, bought) {
+    this.setState(prevState => (deepMerge(prevState, {[name]:{bought: bought}})
     ))
   }
 
@@ -93,17 +126,19 @@ class Final extends Component {
 
   render() {
     let cart=[];
-    let total = 0;
     let inventory=[];
+    let total = 0;
+    let cartRend;
 
+    console.log(this.state)
     for (var key in this.state) {
       let obj = this.state[key];
-      inventory.push (<Inventory name={obj.name} price={obj.price} stock={obj.stock} bought={obj.bought||0} onProductBuy={this.stockChange} />)
-      cart.push (<Cart name={obj.name} price={obj.price} stock={obj.stock} bought={obj.bought||0} onProductBuy={this.stockChange}/>)
+      inventory.push (<Inventory key={obj.name.toString()} name={obj.name} price={obj.price} stock={obj.stock} bought={obj.bought||0} onProductBuy={this.stockChange} />)
+      cart.push (<Cart key={obj.name.toString()} name={obj.name} price={obj.price} stock={obj.stock} bought={obj.bought||0} onProductBuy={this.stockChange}/>)
       total += (obj.bought||0)*obj.price;
     }
 
-    let cartRend = (this.firstRun === true) ? <div><i>Your cart is empty</i></div> : <div>{cart}</div>;
+    cartRend = (this.firstRun === true) ? <div><i>Your cart is empty</i></div> : <div>{cart}</div>;
     this.firstRun = false;
 
     return(

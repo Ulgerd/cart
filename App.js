@@ -28,12 +28,10 @@ Cart.propTypes = {
 class Inventory extends Component {
   render() {
     let prod = this.props
-    let button = <button onClick={() => { if (prod.bought !== prod.stock) {prod.onBuy(prod.id, +1)}}} disabled = {(prod.bought === prod.stock)}>Buy</button>
-
     return (
       <div>
         {prod.name} – ${prod.price}
-        {button}
+        {<button onClick={() => { if (prod.bought !== prod.stock) {prod.onBuy(prod.id, +1)}}} disabled = {(prod.bought === prod.stock)}>Buy</button>}
         ({prod.bought} selected, {prod.stock - prod.bought} in stock)
       </div>
     )

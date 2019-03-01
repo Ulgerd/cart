@@ -7,12 +7,13 @@ const products = { 1: {name: 'Apple', price: 10, stock: 12},
 
 class Cart extends Component {
   render() {
+    let prod = this.props
     return (
       <div>
-        <span style={(this.props.bought === 0) ? {textDecoration:"line-through"}:{textDecoration:"none"}}>{this.props.name} – ${this.props.price} × {this.props.bought}</span>
-        {<button onClick={() => {this.props.onBuy(this.props.id, +1)}} disabled = {(this.props.bought === this.props.stock)}>+1</button>}
-        {<button onClick={() => {this.props.onBuy(this.props.id, -1)}} disabled = {(this.props.bought === 0)}>-1</button>}
-        ({this.props.stock-this.props.bought} in stock)
+        <span style={(prod.bought === 0) ? {textDecoration:"line-through"}:{textDecoration:"none"}}>{prod.name} – ${prod.price} × {prod.bought}</span>
+        {<button onClick={() => {prod.onBuy(prod.id, +1)}} disabled = {(prod.bought === prod.stock)}>+1</button>}
+        {<button onClick={() => {prod.onBuy(prod.id, -1)}} disabled = {(prod.bought === 0)}>-1</button>}
+        ({prod.stock-prod.bought} in stock)
       </div>
     )
   }
@@ -26,13 +27,14 @@ Cart.propTypes = {
 
 class Inventory extends Component {
   render() {
-    let button = <button onClick={() => { if (this.props.bought !== this.props.stock) {this.props.onBuy(this.props.id, +1)}}} disabled = {(this.props.bought === this.props.stock)}>Buy</button>
+    let prod = this.props
+    let button = <button onClick={() => { if (prod.bought !== prod.stock) {prod.onBuy(prod.id, +1)}}} disabled = {(prod.bought === prod.stock)}>Buy</button>
 
     return (
       <div>
-        {this.props.name} – ${this.props.price}
+        {prod.name} – ${prod.price}
         {button}
-        ({this.props.bought} selected, {this.props.stock - this.props.bought} in stock)
+        ({prod.bought} selected, {prod.stock - prod.bought} in stock)
       </div>
     )
   }
